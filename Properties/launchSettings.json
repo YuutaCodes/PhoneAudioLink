@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PhoneAudioLink (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "PhoneAudioLink (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
