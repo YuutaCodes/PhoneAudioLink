@@ -17,6 +17,8 @@ Play audio from your phone through your PC over Bluetooth. Windows supports this
 
 Closing the window hides it to the tray. Use Exit in the tray menu to quit.
 
+If no audio is present, close the connection and connect again.
+
 ## Building
 
 ```
