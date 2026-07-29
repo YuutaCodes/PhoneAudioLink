@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Windows.Devices.Enumeration;
 using Windows.Media.Audio;
 using Windows.Graphics;
-using Microsoft.UI.Windowing;
 
 namespace PhoneAudioLink
 {
