@@ -157,7 +157,7 @@ namespace PhoneAudioLink
 					}
 					else
 					{
-						ConnectionState.Text = "Failed to create connection.";
+						ConnectionState.Text = "Failed to connect.";
 						EnableAudioPlaybackConnectionButton.Content = "Connect";
 					}
 				}
@@ -202,7 +202,10 @@ namespace PhoneAudioLink
 		{
 			DispatcherQueue.TryEnqueue(() =>
 			{
-				ConnectionState.Text = "State: " + sender.State.ToString();
+				if (sender.State.ToString() == "open")
+					ConnectionState.Text = "Connected";
+				else
+					ConnectionState.Text = "State: " + sender.State.ToString();
 			});
 		}
 	}
