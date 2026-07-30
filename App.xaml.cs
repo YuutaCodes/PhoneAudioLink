@@ -46,5 +46,27 @@ namespace PhoneAudioLink
 			_window = new MainWindow();
 			_window.Activate();
 		}
+
+		/// <summary>
+		/// Invoked on the running instance when another launch was redirected here.
+		/// Restores the window instead of opening a second one.
+		/// </summary>
+		internal void OnRedirectedActivation(Microsoft.Windows.AppLifecycle.AppActivationArguments args)
+		{
+			_window?.DispatcherQueue.TryEnqueue(() =>
+			{
+				if (_window is null)
+				{
+					return;
+				}
+
+				_window.AppWindow.Show();
+				_window.Activate();
+				SetForegroundWindow(WinRT.Interop.WindowNative.GetWindowHandle(_window));
+			});
+		}
+
+		[System.Runtime.InteropServices.DllImport("user32.dll")]
+		private static extern bool SetForegroundWindow(IntPtr hWnd);
 	}
 }
