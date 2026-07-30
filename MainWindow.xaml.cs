@@ -115,7 +115,7 @@ namespace PhoneAudioLink
 			var selectedDevice = DeviceListView.SelectedItem as DeviceInformation;
 			if (selectedDevice == null)
 			{
-				ConnectionState.Text = "Please select a device first.";
+				SetStatus("Select a device");
 				return;
 			}
 			EnableAudioPlaybackConnectionButton.IsEnabled = false;
@@ -126,16 +126,18 @@ namespace PhoneAudioLink
 			{
 				if (audioPlaybackConnections.TryGetValue(selectedDevice.Id, out var existingConnection))
 				{
+					existingConnection.StateChanged -= Connection_StateChanged;
 					existingConnection.Dispose();
 					audioPlaybackConnections.Remove(selectedDevice.Id);
 
-					ConnectionState.Text = "Disconnected " + selectedDevice.Name;
+					SetStatus("Disconnected");
 					EnableAudioPlaybackConnectionButton.Content = "Connect";
 				}
 				else
 				{
 					foreach (var oldConnection in audioPlaybackConnections.Values)
 					{
+						oldConnection.StateChanged -= Connection_StateChanged;
 						oldConnection.Dispose();
 					}
 					audioPlaybackConnections.Clear();
@@ -146,7 +148,7 @@ namespace PhoneAudioLink
 						audioPlaybackConnections[selectedDevice.Id] = connection;
 						connection.StateChanged += Connection_StateChanged;
 
-						ConnectionState.Text = "Opening connection for " + selectedDevice.Name;
+						SetStatus("Connecting…");
 
 						await Task.Run(() => connection.Start());
 						await connection.OpenAsync();
@@ -157,7 +159,7 @@ namespace PhoneAudioLink
 					}
 					else
 					{
-						ConnectionState.Text = "Failed to create connection.";
+						SetStatus("Unavailable", $"Windows would not create a connection for {selectedDevice.Name}.");
 						EnableAudioPlaybackConnectionButton.Content = "Connect";
 					}
 				}
@@ -165,7 +167,7 @@ namespace PhoneAudioLink
 			}
 			catch (Exception ex)
 			{
-				ConnectionState.Text = "Error: " + ex.Message;
+				SetStatus("Connection failed", ex.Message);
 				EnableAudioPlaybackConnectionButton.Content = "Connect";
 			}
 			finally
@@ -202,8 +204,21 @@ namespace PhoneAudioLink
 		{
 			DispatcherQueue.TryEnqueue(() =>
 			{
-				ConnectionState.Text = "State: " + sender.State.ToString();
+				SetStatus(sender.State == AudioPlaybackConnectionState.Opened
+					? "Connected"
+					: "Disconnected");
+
+				if (sender.State != AudioPlaybackConnectionState.Opened)
+				{
+					EnableAudioPlaybackConnectionButton.Content = "Connect";
+				}
 			});
+		}
+
+		private void SetStatus(string text, string? detail = null)
+		{
+			ConnectionState.Text = text;
+			ToolTipService.SetToolTip(ConnectionState, detail);
 		}
 	}
 }
