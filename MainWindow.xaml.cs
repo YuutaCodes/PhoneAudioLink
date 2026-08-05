@@ -12,13 +12,6 @@ using Windows.Graphics;
 
 namespace PhoneAudioLink
 {
-	public class DeviceItem
-	{
-		public string Name { get; set; } = string.Empty;
-		public string Id { get; set; } = string.Empty;
-		public DeviceInformation? DeviceInfo { get; set; }
-	}
-
 	public sealed partial class MainWindow : Window
 	{
 		public ObservableCollection<DeviceInformation> devices { get; } = new ObservableCollection<DeviceInformation>();
@@ -81,9 +74,11 @@ namespace PhoneAudioLink
 
 		private void MainGrid_Loaded(object sender, RoutedEventArgs e)
 		{
+			if (deviceWatcher != null)
+				return;
+
 			deviceWatcher = DeviceInformation.CreateWatcher(AudioPlaybackConnection.GetDeviceSelector());
 
-			// Register event handlers before starting the watcher. 
 			deviceWatcher.Added += DeviceWatcher_Added;
 			deviceWatcher.Removed += DeviceWatcher_Removed;
 
@@ -106,6 +101,15 @@ namespace PhoneAudioLink
 				if (device != null)
 				{
 					devices.Remove(device);
+				}
+
+				if (audioPlaybackConnections.TryGetValue(args.Id, out var connection))
+				{
+					connection.StateChanged -= Connection_StateChanged;
+					connection.Dispose();
+					audioPlaybackConnections.Remove(args.Id);
+					SetStatus("Disconnected");
+					EnableAudioPlaybackConnectionButton.Content = "Connect";
 				}
 			});
 		}
@@ -135,16 +139,16 @@ namespace PhoneAudioLink
 				}
 				else
 				{
-					foreach (var oldConnection in audioPlaybackConnections.Values)
-					{
-						oldConnection.StateChanged -= Connection_StateChanged;
-						oldConnection.Dispose();
-					}
-					audioPlaybackConnections.Clear();
-
 					AudioPlaybackConnection connection = AudioPlaybackConnection.TryCreateFromId(selectedDevice.Id);
 					if (connection != null)
 					{
+						foreach (var oldConnection in audioPlaybackConnections.Values)
+						{
+							oldConnection.StateChanged -= Connection_StateChanged;
+							oldConnection.Dispose();
+						}
+						audioPlaybackConnections.Clear();
+
 						audioPlaybackConnections[selectedDevice.Id] = connection;
 						connection.StateChanged += Connection_StateChanged;
 

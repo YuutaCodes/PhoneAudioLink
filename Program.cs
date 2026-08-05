@@ -62,12 +62,12 @@ namespace PhoneAudioLink
 				SetEvent(redirectEvent);
 			});
 
-			_ = CoWaitForMultipleObjects(CWMO_DEFAULT, INFINITE, 1, new[] { redirectEvent }, out _);
+			_ = CoWaitForMultipleObjects(CWMO_DEFAULT, RedirectTimeoutMs, 1, new[] { redirectEvent }, out _);
 			CloseHandle(redirectEvent);
 		}
 
 		private const uint CWMO_DEFAULT = 0;
-		private const uint INFINITE = 0xFFFFFFFF;
+		private const uint RedirectTimeoutMs = 5000;
 
 		[DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		private static extern IntPtr CreateEvent(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string? lpName);
