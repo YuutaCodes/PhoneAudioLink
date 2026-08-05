@@ -20,13 +20,13 @@ jobs:
 
       - name: Publish
         run: >
-          dotnet publish -c Release -r win-x64 --self-contained
+          dotnet publish PhoneAudioLink.csproj -c Release -r win-x64 -p:Platform=x64
+          --self-contained
           -p:WindowsPackageType=None
           -p:WindowsAppSDKSelfContained=true
-          -o publish
 
       - name: Zip
-        run: Compress-Archive -Path publish\* -DestinationPath PhoneAudioLink-${{ github.ref_name }}-win-x64.zip
+        run: Compress-Archive -Path bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\publish\* -DestinationPath PhoneAudioLink-${{ github.ref_name }}-win-x64.zip
 
       - name: Create release
         uses: softprops/action-gh-release@v2
